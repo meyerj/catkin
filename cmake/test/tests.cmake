@@ -74,15 +74,10 @@ if(NOT TARGET run_tests)
   add_custom_target(run_tests)
 endif()
 
-# create target to clean all test results
+# create target to clean test results
 if(NOT TARGET clean_test_results)
   add_custom_target(clean_test_results
-    COMMAND ${PYTHON_EXECUTABLE} "${catkin_EXTRAS_DIR}/test/remove_test_results.py" "${CATKIN_TEST_RESULTS_DIR}")
-endif()
-# create target to clean project specific test results
-if(NOT TARGET clean_test_results_${PROJECT_NAME})
-  add_custom_target(clean_test_results_${PROJECT_NAME}
-    COMMAND ${PYTHON_EXECUTABLE} "${catkin_EXTRAS_DIR}/test/remove_test_results.py" "${CATKIN_TEST_RESULTS_DIR}/${PROJECT_NAME}")
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${CATKIN_TEST_RESULTS_DIR})
 endif()
 
 #
@@ -107,6 +102,11 @@ function(catkin_run_tests_target type name xunit_filename)
     add_custom_target(_run_tests_${PROJECT_NAME})
     # run_tests depends on this hidden target hierarchy to clear test results before running all tests
     add_dependencies(run_tests _run_tests_${PROJECT_NAME})
+  endif()
+  # create meta target to clean all test results of a project
+  if(NOT TARGET clean_test_results_${PROJECT_NAME})
+    add_custom_target(clean_test_results_${PROJECT_NAME}
+      COMMAND ${CMAKE_COMMAND} -E remove_directory ${CATKIN_TEST_RESULTS_DIR}/${PROJECT_NAME})
   endif()
   # create meta target to trigger all tests of a specific type of a project
   if(NOT TARGET run_tests_${PROJECT_NAME}_${type})
